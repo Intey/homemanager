@@ -95,9 +95,12 @@ function create_script() {
     
     # Check if file already exists
     if [[ -f "$target_path" ]]; then
-        log_error "Script '$script_name' already exists at $target_path"
-        echo "Use a different name with --name option"
-        return 1
+        log_info "Script '$script_name' already exists at $target_path"
+        read -p "Override (y/n)? " -E comfirm
+        if [[ $confirm == "n" ]]; then
+            echo "exiting"
+            return 0
+        fi
     fi
     
     # Ensure scripts directory exists

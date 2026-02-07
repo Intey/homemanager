@@ -127,10 +127,6 @@
             cd $1
         }
 
-        fixExtraNewLines() {
-            sed -zi 's/\n\s*\n\s*/\n/g' "$1"
-        }
-
         export EDITOR=nvim
       '';
       #eval "$(/usr/bin/mise activate zsh)"
