@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+set -e
+set -o pipefail
+
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_DIR="$(dirname "$SCRIPT_DIR")"
+SCRIPTS_SUBDIR="scripts"
+
+# Default values
+SCRIPT_NAME=""
+SCRIPT_CONTENT=""
+VERBOSE=false
+
+# Functions
+function show_help() {
+    cat << EOF
+mkhm-script - Add new script to home-manager configuration
+
+Usage:
+    mkhm-script [OPTIONS] <script_content>
+    mkhm-script --name <name> [OPTIONS] <script_content>
+
+Options:
+    --name <name>    Specify script name (default: auto-generated)
+    --verbose        Enable verbose output
+    --help           Show this help message
+
+Examples:
+    mkhm-script 'echo "Hello World"'
+    mkhm-script --name hello 'echo "Hello World"'
+    mkhm-script --name backup-db 'pg_dump mydb > backup.sql'
+
+The script will be created in $CONFIG_DIR/$SCRIPTS_SUBDIR/
+and automatically applied via home-manager.
+EOF
+}
+
+function log_info() {
+    if [[ "$VERBOSE" == true ]]; then
+        echo "[INFO] $1" >&2
+    fi
+}
+
+function log_success() {
+    echo "✓ $1"
+}
+
+function log_error() {
+    echo "✗ Error: $1" >&2
+}
+
+function validate_script_name() {
+    local name="$1"
+    
+    # Check if name contains only allowed characters
+    if [[ ! "$name" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+        log_error "Script name can only contain letters, numbers, underscores, and hyphens"
+        return 1
+    fi
+    
+    # Check if name is not empty
+    if [[ -z "$name" ]]; then
+        log_error "Script name cannot be empty"
+        return 1
+    fi
+    
+    return 0
+}
+
+function generate_script_name() {
+    local base_name="script"
+    local counter=1
+    local proposed_name
+    
+    while true; do
+        proposed_name="${base_name}-${counter}"
+        local target_path="$CONFIG_DIR/$SCRIPTS_SUBDIR/$proposed_name"
+        
+        if [[ ! -f "$target_path" ]]; then
+            echo "$proposed_name"
+            return 0
+        fi
+        
+        ((counter++))
+    done
+}
+
+function create_script() {
+    local script_name="$1"
+    local script_content="$2"
+    local target_path="$CONFIG_DIR/$SCRIPTS_SUBDIR/$script_name"
+    
+    log_info "Creating script at: $target_path"
+    
+    # Check if file already exists
+    if [[ -f "$target_path" ]]; then
+        log_error "Script '$script_name' already exists at $target_path"
+        echo "Use a different name with --name option"
+        return 1
+    fi
+    
+    # Create script with proper shebang and content
+    cat > "$target_path" << EOF
+#!/usr/bin/env bash
+set -e
+
+$script_content
+EOF
+    
+    # Make script executable
+    chmod +x "$target_path"
+    
+    log_success "Created script: $SCRIPTS_SUBDIR/$script_name"
+    return 0
+}
+
+function apply_home_manager() {
+    log_info "Applying home-manager configuration..."
+    
+    cd "$CONFIG_DIR"
+    
+    # Check if Makefile exists and use it, otherwise use home-manager directly
+    if [[ -f "Makefile" ]]; then
+        log_info "Using Makefile to apply configuration"
+        if make >/dev/null 2>&1; then
+            log_success "Applied home-manager configuration"
+        else
+            log_error "Failed to apply configuration via make"
+            return 1
+        fi
+    else
+        log_info "Using home-manager switch directly"
+        if home-manager switch >/dev/null 2>&1; then
+            log_success "Applied home-manager configuration"
+        else
+            log_error "Failed to apply configuration via home-manager switch"
+            return 1
+        fi
+    fi
+}
+
+function main() {
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --name)
+                SCRIPT_NAME="$2"
+                shift 2
+                ;;
+            --verbose)
+                VERBOSE=true
+                shift
+                ;;
+            --help)
+                show_help
+                exit 0
+                ;;
+            -*)
+                log_error "Unknown option: $1"
+                echo "Use --help for usage information"
+                exit 1
+                ;;
+            *)
+                # This should be the script content
+                if [[ -n "$SCRIPT_CONTENT" ]]; then
+                    log_error "Multiple script contents provided. Use quotes around your script."
+                    exit 1
+                fi
+                SCRIPT_CONTENT="$1"
+                shift
+                ;;
+        esac
+    done
+    
+    # Validate required arguments
+    if [[ -z "$SCRIPT_CONTENT" ]]; then
+        log_error "Script content is required"
+        echo "Usage: mkhm-script [--name <name>] '<script_content>'"
+        echo "Use --help for more information"
+        exit 1
+    fi
+    
+    # Generate name if not provided
+    if [[ -z "$SCRIPT_NAME" ]]; then
+        SCRIPT_NAME=$(generate_script_name)
+        log_info "Auto-generated script name: $SCRIPT_NAME"
+    else
+        if ! validate_script_name "$SCRIPT_NAME"; then
+            exit 1
+        fi
+    fi
+    
+    # Create the script
+    if ! create_script "$SCRIPT_NAME" "$SCRIPT_CONTENT"; then
+        exit 1
+    fi
+    
+    # Apply home-manager configuration
+    if ! apply_home_manager; then
+        exit 1
+    fi
+    
+    log_success "Script available as: $SCRIPT_NAME"
+    echo ""
+    echo "You can now run your script from anywhere:"
+    echo "  $SCRIPT_NAME"
+}
+
+# Run main function
+main "$@"
