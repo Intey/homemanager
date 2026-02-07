@@ -3,8 +3,8 @@ set -e
 set -o pipefail
 
 # Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_DIR="$(dirname "$SCRIPT_DIR")"
+# Find the home-manager configuration directory
+CONFIG_DIR="$HOME/.config/home-manager"
 SCRIPTS_SUBDIR="scripts"
 
 # Default values
@@ -99,6 +99,9 @@ function create_script() {
         echo "Use a different name with --name option"
         return 1
     fi
+    
+    # Ensure scripts directory exists
+    mkdir -p "$CONFIG_DIR/$SCRIPTS_SUBDIR"
     
     # Create script with proper shebang and content
     cat > "$target_path" << EOF
