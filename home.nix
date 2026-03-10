@@ -1,7 +1,12 @@
-{ config, pkgs, inputs, ... }@ins: {
+{ config
+, pkgs
+, inputs
+, ...
+}@ins:
+{
   targets.genericLinux.enable = true;
   imports = [
-    # inputs.LazyVim.homeManagerModules.default 
+    # inputs.LazyVim.homeManagerModules.default
     #./nvim
     ./obsidian.nix
     ./scripts.nix
@@ -12,8 +17,12 @@
     username = "intey";
     homeDirectory = "/home/intey";
     stateVersion = "25.05";
-    sessionPath = [ "$HOME/.local/bin" ];
-    packages = (with pkgs;
+    sessionPath = [
+      "$HOME/.local/bin"
+      "$HOME/projects/work/.local/bin"
+    ];
+    packages = (
+      with pkgs;
       [
         #python314
         #aider-chat
@@ -27,6 +36,7 @@
         #cookiecutter
         plantuml
         inotify-tools
+        nickel
         #asciinema
         #agg # not found binary.
         #picat
@@ -35,7 +45,8 @@
         #   ppkgs.ipython
 
         # ]))
-      ]);
+      ]
+    );
     shellAliases = { };
   };
 
@@ -62,6 +73,7 @@
         retry = "git last && git poh -f";
         c = "checkout";
         sw = "switch";
+        shift = "!git stash --keep-index && git stash && git switch $1 && git commit && git";
       };
     };
     # aider.enable = true;
@@ -105,6 +117,9 @@
                 --preview-window="70%:wrap"     )" &&       echo "$file"
             }
 
+        gswt() {
+          cd $(git worktree list | cut -d' ' -f 1 | fzf)
+          }
         git_user_intey() {
             git config user.email "ziexe0@gmail.com"
             git config user.name "intey"
@@ -128,6 +143,9 @@
         }
 
         export EDITOR=nvim
+        source ~/.ghcup/env
+        eval $(nickel gen-completions zsh)
+
       '';
       #eval "$(/usr/bin/mise activate zsh)"
     };
@@ -143,7 +161,9 @@
   # nix.settings = {
   #   extra-experimental-features = [ "nix-command" "flakes" ];
   # };
-  nixpkgs.config = { allowUnfree = true; };
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
 
   # programs.lazyvim = {
   #   enable = true;
@@ -151,7 +171,9 @@
   programs.starship = {
     enable = true;
     settings = {
-      gcloud = { disabled = true; };
+      gcloud = {
+        disabled = true;
+      };
       add_newline = false;
       # format = ins.lib.concatStrings [
       #   "$line_break"

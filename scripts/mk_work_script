@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -e
+set -o pipefail
+SCRIPTS_SUBDIR = "/home/intey/projects/.local/bin"
+
+function create_script() {
+    local script_name="$1"
+    local script_content="$2"
+    local target_path="$SCRIPTS_SUBDIR/$script_name"
+    
+    log_info "Creating script at: $target_path"
+    
+    if [[ -f "$target_path" ]]; then
+        log_info "Script '$script_name' already exists at $target_path"
+        read -p "Override (y/n)? " -E comfirm
+        if [[ $confirm == "n" ]]; then
+            echo "exiting"
+            return 0
+        fi
+    fi
+    
+    # Create script with proper shebang and content
+    cat > "$target_path" << EOF
+#!/usr/bin/env bash
+set -e
+
+$script_content
+EOF
+    
+    # Make script executable
+    chmod +x "$target_path"
+    
+    echo "Created script: $SCRIPTS_SUBDIR/$script_name"
+    return 0
+}
+
+
+mkdir -p $SCRIPTS_SUBDIR
+create_script $1 "$@"

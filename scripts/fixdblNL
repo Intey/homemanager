@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -e
-
-sed -zi 's/\n\s*\n\s*/\n/g' "/home/intey/projects/my/Wiki/Nix learning plan.md"
