@@ -1,13 +1,9 @@
-{ config
-, pkgs
-, inputs
+{ pkgs
 , ...
 }@ins:
 {
   targets.genericLinux.enable = true;
   imports = [
-    # inputs.LazyVim.homeManagerModules.default
-    #./nvim
     ./obsidian.nix
     ./scripts.nix
   ];
@@ -37,6 +33,8 @@
         plantuml
         inotify-tools
         nickel
+        exercism
+        bats # for exercism
         #asciinema
         #agg # not found binary.
         #picat
