@@ -8,15 +8,17 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # hygen.url = "github:jondot/hygen?tag=v6.2.11";
-    #obsidian-nvim.url = "github:epwalsh/obsidian.nvim";
+    github-packages.url = "path:./github-packages";
 
   };
 
-  outputs = { nixpkgs, home-manager, ... }@inputs:
+  outputs = { nixpkgs, home-manager, github-packages, ... }@inputs:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ github-packages.overlays.default ];
+      };
     in
     {
       homeConfigurations."intey" = home-manager.lib.homeManagerConfiguration {

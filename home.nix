@@ -1,4 +1,5 @@
-{ pkgs
+{ inputs
+, pkgs
 , ...
 }@ins:
 {
@@ -20,6 +21,7 @@
     packages = (
       with pkgs;
       [
+        # freelens-bin
         #python314
         #aider-chat
         #silver-searcher
@@ -35,6 +37,7 @@
         nickel
         exercism
         bats # for exercism
+        argo
         #asciinema
         #agg # not found binary.
         #picat
@@ -59,7 +62,7 @@
     #alacritty.enable = true;
     git = {
       enable = true;
-      aliases = {
+      settings.alias = {
         s = "status";
         d = "diff";
         dc = "diff --cached";
