@@ -38,6 +38,7 @@
         exercism
         bats # for exercism
         argo
+        #freelens # 404 for github releases
         #asciinema
         #agg # not found binary.
         #picat
@@ -144,6 +145,7 @@
         }
 
         export EDITOR=nvim
+        export VLLM_API_KEY="nothing"
         source ~/.ghcup/env
         eval $(nickel gen-completions zsh)
 
