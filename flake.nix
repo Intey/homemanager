@@ -8,11 +8,20 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-freelens = {
+      url = "github:DaNussi/nix-freelens";
+    };
     github-packages.url = "path:./github-packages";
 
   };
 
-  outputs = { nixpkgs, home-manager, github-packages, ... }@inputs:
+  outputs =
+    { nixpkgs
+    , home-manager
+    , github-packages
+    , nix-freelens
+    , ...
+    }@inputs:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -26,7 +35,10 @@
 
         # Specify your home configuration modules here, for example,
         # the path to your home.nix.
-        extraSpecialArgs = { inherit inputs; };
+        extraSpecialArgs = {
+          inherit inputs;
+          nix-freelens = nix-freelens.packages.${system}.default;
+        };
         modules = [ ./home.nix ];
 
       };

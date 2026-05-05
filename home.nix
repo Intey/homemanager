@@ -1,5 +1,6 @@
 { inputs
 , pkgs
+, nix-freelens
 , ...
 }@ins:
 {
@@ -38,7 +39,7 @@
         exercism
         bats # for exercism
         argo
-        #freelens # 404 for github releases
+        nix-freelens
         #asciinema
         #agg # not found binary.
         #picat
