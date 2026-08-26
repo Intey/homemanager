@@ -1,7 +1,7 @@
-{ inputs
-, pkgs
-, nix-freelens
-, ...
+{
+  inputs,
+  pkgs,
+  ...
 }@ins:
 {
   targets.genericLinux.enable = true;
@@ -33,13 +33,14 @@
         #(config.lib.nixGL.wrap blender)
         #(config.lib.nixGL.wrapOffload pkgs.freecad)
         #cookiecutter
+        tio
         plantuml
         inotify-tools
         nickel
         exercism
         bats # for exercism
         argo
-        nix-freelens
+        #freelens
         #asciinema
         #agg # not found binary.
         #picat
